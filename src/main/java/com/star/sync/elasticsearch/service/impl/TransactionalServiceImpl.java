@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -46,6 +48,8 @@ public class TransactionalServiceImpl implements TransactionalService {
         source.parallelStream().forEach(map -> map.forEach((key, value) -> {
             if (value instanceof Timestamp) {
                 map.put(key, LocalDateTime.ofInstant(((Timestamp) value).toInstant(), ZoneId.systemDefault()));
+            }else if(value instanceof BigDecimal) {
+            	map.put(key, ((BigDecimal)value).toPlainString());
             }
         }));
         return source;

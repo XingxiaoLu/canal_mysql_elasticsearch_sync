@@ -1,25 +1,26 @@
 package com.star.sync.elasticsearch.service.impl;
 
-import com.star.sync.elasticsearch.dao.BaseDao;
-import com.star.sync.elasticsearch.model.IndexTypeModel;
-import com.star.sync.elasticsearch.model.request.SyncByTableRequest;
-import com.star.sync.elasticsearch.service.ElasticsearchService;
-import com.star.sync.elasticsearch.service.TransactionalService;
-
-import org.apache.commons.lang.text.StrBuilder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Resource;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.star.sync.elasticsearch.dao.BaseDao;
+import com.star.sync.elasticsearch.model.IndexTypeModel;
+import com.star.sync.elasticsearch.model.request.SyncByTableRequest;
+import com.star.sync.elasticsearch.service.ElasticsearchService;
+import com.star.sync.elasticsearch.service.TransactionalService;
 
 /**
  * @author <a href="mailto:wangchao.star@gmail.com">wangchao</a>
@@ -59,20 +60,30 @@ public class TransactionalServiceImpl implements TransactionalService {
 			} else if (value instanceof java.math.BigInteger) {
 				map.put(key, ((BigInteger) value).longValue());
 			}
-
-			if (key.contains("_")) {
-				StringBuffer stringBuffer = new StringBuffer();
-				String[] fragments = key.split("_");
-				stringBuffer.append(fragments[0]);
-				for (int i = 1; i < fragments.length; i++) {
-					Character.toUpperCase(fragments[i].indexOf(0));
-					stringBuffer.append(fragments[i]);
-				}
-				String newKey = stringBuffer.toString();
-				map.put(newKey, value);
-				map.remove(key);
-			}
 		}));
-		return source;
+		List<Map<String, Object>> target = new ArrayList<Map<String, Object>>();
+		
+		source.forEach(map->{
+			Map<String, Object> newMap = new HashMap<>();
+			target.add(newMap);
+			map.forEach((key,value)->{
+				if (key.contains("_")) {
+					StringBuffer stringBuffer = new StringBuffer();
+					String[] fragments = key.split("_");
+					stringBuffer.append(fragments[0]);
+					for (int i = 1; i < fragments.length; i++) {
+						char uc  = Character.toUpperCase(fragments[i].charAt(0));
+						StringBuilder stringBuilder = new StringBuilder(fragments[i]);
+						stringBuilder.setCharAt(0, uc);
+						stringBuffer.append(stringBuilder.toString());
+					}
+					String newKey = stringBuffer.toString();
+					newMap.put(newKey, value);
+				}else {
+					newMap.put(key, value);
+				}
+			});
+		});
+		return target;
 	}
 }

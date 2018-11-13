@@ -15,4 +15,6 @@ public interface SyncService {
    * @return 后台同步进程执行成功与否
    */
   boolean syncByTable(SyncByTableRequest request);
+
+  boolean syncAll();
 }

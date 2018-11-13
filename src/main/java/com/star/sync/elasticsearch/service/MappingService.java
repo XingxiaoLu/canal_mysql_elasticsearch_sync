@@ -47,4 +47,7 @@ public interface MappingService {
    * @return Elasticsearch对应的数据类型
    */
   Object getElasticsearchTypeObject(String mysqlType, String data);
+
+
+  Map<String, String> getDbEsMapping();
 }

@@ -10,6 +10,9 @@ import com.star.sync.elasticsearch.model.response.Response;
 import com.star.sync.elasticsearch.service.SyncService;
 import com.star.sync.elasticsearch.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 /**
  * @author <a href="mailto:wangchao.star@gmail.com">wangchao</a>
@@ -37,4 +40,12 @@ public class SyncController {
     log.debug("response_info: " + JsonUtil.toJson(request));
     return response;
   }
+
+  @RequestMapping(value = "/all", method = RequestMethod.GET)
+  @ResponseBody
+  public String syncAll() {
+    String response = Response.success(syncService.syncAll()).toString();
+    return response;
+  }
+
 }

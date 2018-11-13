@@ -1,6 +1,7 @@
 package com.star.sync.elasticsearch.service.impl;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -84,5 +85,33 @@ public class SyncServiceImpl implements SyncService, InitializingBean, Disposabl
     if (cachedThreadPool != null) {
       cachedThreadPool.shutdown();
     }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.star.sync.elasticsearch.service.SyncService#syncAll()
+   */
+  @Override
+  public boolean syncAll() {
+    Map<String, String> dbEsMapping = mappingService.getDbEsMapping();
+    dbEsMapping.forEach((key, value) -> {
+      String[] fragments = key.split("\\.");
+      if (fragments.length == 2) {
+        String database = fragments[0];
+        String table = fragments[1];
+
+        SyncByTableRequest request = new SyncByTableRequest();
+        request.setDatabase(database);
+        request.setTable(table);
+
+        log.info("开始同步-> 数据库: {}, 数据表: {}", database, table);
+        syncByTable(request);
+        log.info("数据表同步完成-> 数据库: {}, 数据表: {}", database, table);
+      }
+    });
+
+    log.info("全量同步完成");
+    return false;
   }
 }

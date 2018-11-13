@@ -1,15 +1,16 @@
 package com.star.sync.elasticsearch.client;
 
-import com.alibaba.otter.canal.client.CanalConnector;
-import com.alibaba.otter.canal.client.CanalConnectors;
-import com.google.common.collect.Lists;
+import java.net.InetSocketAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import java.net.InetSocketAddress;
+import com.alibaba.otter.canal.client.CanalConnector;
+import com.alibaba.otter.canal.client.CanalConnectors;
+import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author <a href="mailto:wangchao.star@gmail.com">wangchao</a>
@@ -17,8 +18,8 @@ import java.net.InetSocketAddress;
  * @since 2017-08-25 17:26:00
  */
 @Component
+@Slf4j
 public class CanalClient implements DisposableBean {
-  private static final Logger logger = LoggerFactory.getLogger(CanalClient.class);
   private CanalConnector canalConnector;
 
   @Value("${canal.host}")
@@ -42,7 +43,7 @@ public class CanalClient implements DisposableBean {
     canalConnector.subscribe();
     // 回滚寻找上次中断的位置
     canalConnector.rollback();
-    logger.info("canal客户端启动成功");
+    log.info("canal客户端启动成功");
     return canalConnector;
   }
 

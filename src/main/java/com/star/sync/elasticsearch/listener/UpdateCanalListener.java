@@ -1,18 +1,19 @@
 package com.star.sync.elasticsearch.listener;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import javax.annotation.Resource;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import com.alibaba.otter.canal.protocol.CanalEntry.Column;
 import com.alibaba.otter.canal.protocol.CanalEntry.RowData;
 import com.star.sync.elasticsearch.event.UpdateCanalEvent;
 import com.star.sync.elasticsearch.service.ElasticsearchService;
 import com.star.sync.elasticsearch.service.MappingService;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-import javax.annotation.Resource;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author <a href="mailto:wangchao.star@gmail.com">wangchao</a>
@@ -20,8 +21,8 @@ import java.util.Optional;
  * @since 2017-08-26 22:32:00
  */
 @Component
+@Slf4j
 public class UpdateCanalListener extends AbstractCanalListener<UpdateCanalEvent> {
-  private static final Logger logger = LoggerFactory.getLogger(UpdateCanalListener.class);
 
   @Resource
   private MappingService mappingService;
@@ -39,15 +40,15 @@ public class UpdateCanalListener extends AbstractCanalListener<UpdateCanalEvent>
         columns.stream().filter(column -> column.getIsKey() && primaryKey.equals(column.getName()))
             .findFirst().orElse(null);
     if (idColumn == null || StringUtils.isBlank(idColumn.getValue())) {
-      logger.warn("update_column_find_null_warn update从column中找不到主键,database=" + database
-          + ",table=" + table);
+      log.warn("update_column_find_null_warn update从column中找不到主键,database=" + database + ",table="
+          + table);
       return;
     }
-    logger.debug("update_column_id_info update主键id,database=" + database + ",table=" + table
-        + ",id=" + idColumn.getValue());
+    log.debug("update_column_id_info update主键id,database=" + database + ",table=" + table + ",id="
+        + idColumn.getValue());
     Map<String, Object> dataMap = parseColumnsToMap(columns);
     elasticsearchService.update(index, type, idColumn.getValue(), dataMap);
-    logger.debug(
+    log.debug(
         "update_es_info 同步es插入操作成功！database=" + database + ",table=" + table + ",data=" + dataMap);
   }
 }

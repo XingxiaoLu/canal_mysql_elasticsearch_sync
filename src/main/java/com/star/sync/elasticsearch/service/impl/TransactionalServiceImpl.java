@@ -55,7 +55,7 @@ public class TransactionalServiceImpl implements TransactionalService {
         map.put(key,
             LocalDateTime.ofInstant(((Timestamp) value).toInstant(), ZoneId.systemDefault()));
       } else if (value instanceof BigDecimal) {
-        map.put(key, ((BigDecimal) value).toPlainString());
+        map.put(key, ((BigDecimal) value).longValue());
       } else if (value instanceof java.math.BigInteger) {
         map.put(key, ((BigInteger) value).longValue());
       }

@@ -1,5 +1,12 @@
 package com.star.sync.elasticsearch.scheduling;
 
+import java.util.List;
+import javax.annotation.Resource;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import com.alibaba.otter.canal.client.CanalConnector;
 import com.alibaba.otter.canal.protocol.CanalEntry.Entry;
 import com.alibaba.otter.canal.protocol.CanalEntry.EntryType;
@@ -8,15 +15,7 @@ import com.alibaba.otter.canal.protocol.Message;
 import com.star.sync.elasticsearch.event.DeleteCanalEvent;
 import com.star.sync.elasticsearch.event.InsertCanalEvent;
 import com.star.sync.elasticsearch.event.UpdateCanalEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-import javax.annotation.Resource;
-import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author <a href="mailto:wangchao.star@gmail.com">wangchao</a>
@@ -24,8 +23,8 @@ import java.util.List;
  * @since 2017-08-26 22:44:00
  */
 @Component
+@Slf4j
 public class CanalScheduling implements Runnable, ApplicationContextAware {
-  private static final Logger logger = LoggerFactory.getLogger(CanalScheduling.class);
   private ApplicationContext applicationContext;
 
   @Resource
@@ -39,7 +38,7 @@ public class CanalScheduling implements Runnable, ApplicationContextAware {
       // Message message = connector.get(batchSize);
       Message message = canalConnector.getWithoutAck(batchSize);
       long batchId = message.getId();
-      logger.debug("scheduled_batchId=" + batchId);
+      log.debug("scheduled_batchId=" + batchId);
       try {
         List<Entry> entries = message.getEntries();
         if (batchId != -1 && entries.size() > 0) {
@@ -51,11 +50,11 @@ public class CanalScheduling implements Runnable, ApplicationContextAware {
         }
         canalConnector.ack(batchId);
       } catch (Exception e) {
-        logger.error("发送监听事件失败！batchId回滚,batchId=" + batchId, e);
+        log.error("发送监听事件失败！batchId回滚,batchId=" + batchId, e);
         canalConnector.rollback(batchId);
       }
     } catch (Exception e) {
-      logger.error("canal_scheduled异常！", e);
+      log.error("canal_scheduled异常！", e);
     }
   }
 

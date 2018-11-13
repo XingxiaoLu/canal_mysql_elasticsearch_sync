@@ -1,18 +1,5 @@
 package com.star.sync.elasticsearch.service.impl;
 
-import com.star.sync.elasticsearch.dao.BaseDao;
-import com.star.sync.elasticsearch.model.DatabaseTableModel;
-import com.star.sync.elasticsearch.model.IndexTypeModel;
-import com.star.sync.elasticsearch.model.request.SyncByTableRequest;
-import com.star.sync.elasticsearch.service.MappingService;
-import com.star.sync.elasticsearch.service.SyncService;
-import com.star.sync.elasticsearch.service.TransactionalService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.stereotype.Service;
-import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -20,6 +7,18 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Resource;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.stereotype.Service;
+import com.star.sync.elasticsearch.dao.BaseDao;
+import com.star.sync.elasticsearch.model.DatabaseTableModel;
+import com.star.sync.elasticsearch.model.IndexTypeModel;
+import com.star.sync.elasticsearch.model.request.SyncByTableRequest;
+import com.star.sync.elasticsearch.service.MappingService;
+import com.star.sync.elasticsearch.service.SyncService;
+import com.star.sync.elasticsearch.service.TransactionalService;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author <a href="mailto:wangchao.star@gmail.com">wangchao</a>
@@ -27,8 +26,8 @@ import java.util.concurrent.TimeUnit;
  * @since 2017-08-31 17:48:00
  */
 @Service
+@Slf4j
 public class SyncServiceImpl implements SyncService, InitializingBean, DisposableBean {
-  private static final Logger logger = LoggerFactory.getLogger(SyncServiceImpl.class);
   /**
    * 使用线程池控制并发数量
    */
@@ -64,11 +63,11 @@ public class SyncServiceImpl implements SyncService, InitializingBean, Disposabl
         for (long i = minPK; i < maxPK; i += request.getStepSize()) {
           transactionalService.batchInsertElasticsearch(request, primaryKey, i,
               i + request.getStepSize(), indexTypeModel);
-          logger.info(String.format("当前同步pk=%s，总共total=%s，进度=%s%%", i, maxPK,
+          log.info(String.format("当前同步pk=%s，总共total=%s，进度=%s%%", i, maxPK,
               new BigDecimal(i * 100).divide(new BigDecimal(maxPK), 3, BigDecimal.ROUND_HALF_UP)));
         }
       } catch (Exception e) {
-        logger.error("批量转换并插入Elasticsearch异常", e);
+        log.error("批量转换并插入Elasticsearch异常", e);
       }
     });
     return true;

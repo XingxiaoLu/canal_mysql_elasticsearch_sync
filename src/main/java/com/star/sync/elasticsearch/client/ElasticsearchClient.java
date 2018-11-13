@@ -11,6 +11,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author <a href="mailto:wangchao.star@gmail.com">wangchao</a>
@@ -18,8 +19,8 @@ import org.springframework.stereotype.Component;
  * @since 2017-08-25 17:32:00
  */
 @Component
+@Slf4j
 public class ElasticsearchClient implements DisposableBean {
-  private static final Logger logger = LoggerFactory.getLogger(ElasticsearchClient.class);
   private TransportClient transportClient;
 
   @Value("${elasticsearch.cluster.name}")
@@ -35,7 +36,7 @@ public class ElasticsearchClient implements DisposableBean {
         .put("client.transport.sniff", true).build();
     transportClient = new PreBuiltTransportClient(settings).addTransportAddress(
         new TransportAddress(InetAddress.getByName(host), Integer.valueOf(port)));
-    logger.info("elasticsearch transportClient 连接成功");
+    log.info("elasticsearch transportClient 连接成功");
     return transportClient;
   }
 

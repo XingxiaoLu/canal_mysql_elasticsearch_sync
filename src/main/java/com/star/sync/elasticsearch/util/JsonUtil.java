@@ -1,16 +1,15 @@
 package com.star.sync.elasticsearch.util;
 
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.List;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * json格式转换通用类
@@ -19,8 +18,8 @@ import java.util.List;
  * @version 1.0
  * @since 2017-08-26 22:54:00
  */
+@Slf4j
 public abstract class JsonUtil {
-  private static final Logger logger = LoggerFactory.getLogger(JsonUtil.class);
   private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
   /**
    * 对象映射
@@ -49,7 +48,7 @@ public abstract class JsonUtil {
     try {
       rst = objMapper.writeValueAsString(obj);
     } catch (Exception e) {
-      logger.error("将Java对象转换成Json串出错！");
+      log.error("将Java对象转换成Json串出错！");
       throw new RuntimeException("将Java对象转换成Json串出错！", e);
     }
     return rst;
@@ -67,7 +66,7 @@ public abstract class JsonUtil {
     try {
       rst = objMapper.readValue(json, type);
     } catch (Exception e) {
-      logger.error("Json串转换成对象出错：{}", json);
+      log.error("Json串转换成对象出错：{}", json);
       throw new RuntimeException("Json串转换成对象出错!", e);
     }
     return rst;
@@ -88,7 +87,7 @@ public abstract class JsonUtil {
     try {
       rst = objMapper.readValue(json, typeRef);
     } catch (Exception e) {
-      logger.error("Json串转换成对象出错：{}", json);
+      log.error("Json串转换成对象出错：{}", json);
       throw new RuntimeException("Json串转换成对象出错!", e);
     }
     return rst;
@@ -100,7 +99,7 @@ public abstract class JsonUtil {
     try {
       map = objMapper.readValue(json, map.getClass());
     } catch (IOException e) {
-      logger.error("Json串转换成对象出错：{}", json);
+      log.error("Json串转换成对象出错：{}", json);
     }
     return map;
   }
@@ -112,7 +111,7 @@ public abstract class JsonUtil {
       map = objMapper.readValue(json, HashMap.class);
     } catch (Exception e) {
       map = null;
-      logger.error("Json串转换成对象出错：{}", json);
+      log.error("Json串转换成对象出错：{}", json);
     }
     return map;
   }
@@ -123,7 +122,7 @@ public abstract class JsonUtil {
     try {
       list = objMapper.readValue(json, List.class);
     } catch (IOException e) {
-      logger.error("Json串转换成对象出错：{}", json);
+      log.error("Json串转换成对象出错：{}", json);
       throw new RuntimeException("Json串转换成List出错!", e);
     }
     return list;

@@ -1,15 +1,14 @@
 package com.star.sync.elasticsearch.service.impl;
 
-import com.star.sync.elasticsearch.service.ElasticsearchService;
-import com.star.sync.elasticsearch.util.JsonUtil;
+import java.util.Map;
+import javax.annotation.Resource;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.transport.TransportClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import javax.annotation.Resource;
-import java.util.Map;
+import com.star.sync.elasticsearch.service.ElasticsearchService;
+import com.star.sync.elasticsearch.util.JsonUtil;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author <a href="mailto:wangchao.star@gmail.com">wangchao</a>
@@ -17,8 +16,8 @@ import java.util.Map;
  * @since 2017-08-27 12:38:00
  */
 @Service
+@Slf4j
 public class ElasticsearchServiceImpl implements ElasticsearchService {
-  private static final Logger logger = LoggerFactory.getLogger(ElasticsearchServiceImpl.class);
 
   @Resource
   private TransportClient transportClient;
@@ -38,11 +37,11 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
     try {
       BulkResponse bulkResponse = bulkRequestBuilder.execute().get();
       if (bulkResponse.hasFailures()) {
-        logger.error("elasticsearch批量插入错误, index=" + index + ", type=" + type + ", data="
+        log.error("elasticsearch批量插入错误, index=" + index + ", type=" + type + ", data="
             + JsonUtil.toJson(idDataMap) + ", cause:" + bulkResponse.buildFailureMessage());
       }
     } catch (Exception e) {
-      logger.error("elasticsearch批量插入错误, index=" + index + ", type=" + type + ", data="
+      log.error("elasticsearch批量插入错误, index=" + index + ", type=" + type + ", data="
           + JsonUtil.toJson(idDataMap), e);
     }
   }

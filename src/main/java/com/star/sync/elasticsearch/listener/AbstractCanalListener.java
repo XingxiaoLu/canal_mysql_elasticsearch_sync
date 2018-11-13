@@ -1,5 +1,10 @@
 package com.star.sync.elasticsearch.listener;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Resource;
+import org.springframework.context.ApplicationListener;
 import com.alibaba.otter.canal.protocol.CanalEntry.Column;
 import com.alibaba.otter.canal.protocol.CanalEntry.Entry;
 import com.alibaba.otter.canal.protocol.CanalEntry.RowChange;
@@ -9,22 +14,16 @@ import com.star.sync.elasticsearch.event.CanalEvent;
 import com.star.sync.elasticsearch.model.DatabaseTableModel;
 import com.star.sync.elasticsearch.model.IndexTypeModel;
 import com.star.sync.elasticsearch.service.MappingService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationListener;
-import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author <a href="mailto:wangchao.star@gmail.com">wangchao</a>
  * @version 1.0
  * @since 2017-08-28 14:40:00
  */
+@Slf4j
 public abstract class AbstractCanalListener<EVENT extends CanalEvent>
     implements ApplicationListener<EVENT> {
-  private static final Logger logger = LoggerFactory.getLogger(AbstractCanalListener.class);
 
   @Resource
   private MappingService mappingService;
@@ -45,7 +44,7 @@ public abstract class AbstractCanalListener<EVENT extends CanalEvent>
     try {
       change = RowChange.parseFrom(entry.getStoreValue());
     } catch (InvalidProtocolBufferException e) {
-      logger.error("canalEntry_parser_error,根据CanalEntry获取RowChange失败！", e);
+      log.error("canalEntry_parser_error,根据CanalEntry获取RowChange失败！", e);
       return;
     }
     change.getRowDatasList().forEach(rowData -> doSync(database, table, index, type, rowData));
@@ -57,7 +56,21 @@ public abstract class AbstractCanalListener<EVENT extends CanalEvent>
       if (column == null) {
         return;
       }
-      jsonMap.put(column.getName(), column.getIsNull() ? null
+      String columnName = column.getName();
+      if (columnName.contains("_")) {
+        StringBuffer stringBuffer = new StringBuffer();
+        String[] fragments = columnName.split("_");
+        stringBuffer.append(fragments[0]);
+        for (int i = 1; i < fragments.length; i++) {
+          char uc = Character.toUpperCase(fragments[i].charAt(0));
+          StringBuilder stringBuilder = new StringBuilder(fragments[i]);
+          stringBuilder.setCharAt(0, uc);
+          stringBuffer.append(stringBuilder.toString());
+        }
+        columnName = stringBuffer.toString();
+      }
+
+      jsonMap.put(columnName, column.getIsNull() ? null
           : mappingService.getElasticsearchTypeObject(column.getMysqlType(), column.getValue()));
     });
     return jsonMap;

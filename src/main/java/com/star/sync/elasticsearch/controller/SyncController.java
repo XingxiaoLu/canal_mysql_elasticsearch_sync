@@ -1,16 +1,15 @@
 package com.star.sync.elasticsearch.controller;
 
-import com.star.sync.elasticsearch.model.request.SyncByTableRequest;
-import com.star.sync.elasticsearch.model.response.Response;
-import com.star.sync.elasticsearch.service.SyncService;
-import com.star.sync.elasticsearch.util.JsonUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.annotation.Resource;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import javax.annotation.Resource;
+import com.star.sync.elasticsearch.model.request.SyncByTableRequest;
+import com.star.sync.elasticsearch.model.response.Response;
+import com.star.sync.elasticsearch.service.SyncService;
+import com.star.sync.elasticsearch.util.JsonUtil;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author <a href="mailto:wangchao.star@gmail.com">wangchao</a>
@@ -19,8 +18,8 @@ import javax.annotation.Resource;
  */
 @Controller
 @RequestMapping("/sync")
+@Slf4j
 public class SyncController {
-  private static final Logger logger = LoggerFactory.getLogger(SyncController.class);
 
   @Resource
   private SyncService syncService;
@@ -33,9 +32,9 @@ public class SyncController {
   @RequestMapping("/byTable")
   @ResponseBody
   public String syncTable(@Validated SyncByTableRequest request) {
-    logger.debug("request_info: " + JsonUtil.toJson(request));
+    log.debug("request_info: " + JsonUtil.toJson(request));
     String response = Response.success(syncService.syncByTable(request)).toString();
-    logger.debug("response_info: " + JsonUtil.toJson(request));
+    log.debug("response_info: " + JsonUtil.toJson(request));
     return response;
   }
 }

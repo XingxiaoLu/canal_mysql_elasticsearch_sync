@@ -10,16 +10,16 @@ import org.springframework.context.ApplicationEvent;
  */
 public abstract class CanalEvent extends ApplicationEvent {
 
-    /**
-     * Create a new ApplicationEvent.
-     *
-     * @param source the object on which the event initially occurred (never {@code null})
-     */
-    public CanalEvent(Entry source) {
-        super(source);
-    }
+  /**
+   * Create a new ApplicationEvent.
+   *
+   * @param source the object on which the event initially occurred (never {@code null})
+   */
+  public CanalEvent(Entry source) {
+    super(source);
+  }
 
-    public Entry getEntry() {
-        return (Entry) source;
-    }
+  public Entry getEntry() {
+    return (Entry) source;
+  }
 }

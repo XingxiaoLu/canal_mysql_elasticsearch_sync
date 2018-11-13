@@ -15,7 +15,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
 import javax.annotation.Resource;
 import java.util.List;
 
@@ -26,59 +25,59 @@ import java.util.List;
  */
 @Component
 public class CanalScheduling implements Runnable, ApplicationContextAware {
-    private static final Logger logger = LoggerFactory.getLogger(CanalScheduling.class);
-    private ApplicationContext applicationContext;
+  private static final Logger logger = LoggerFactory.getLogger(CanalScheduling.class);
+  private ApplicationContext applicationContext;
 
-    @Resource
-    private CanalConnector canalConnector;
+  @Resource
+  private CanalConnector canalConnector;
 
-    @Scheduled(fixedDelay = 100)
-    @Override
-    public void run() {
-        try {
-            int batchSize = 1000;
-//            Message message = connector.get(batchSize);
-            Message message = canalConnector.getWithoutAck(batchSize);
-            long batchId = message.getId();
-            logger.debug("scheduled_batchId=" + batchId);
-            try {
-                List<Entry> entries = message.getEntries();
-                if (batchId != -1 && entries.size() > 0) {
-                    entries.forEach(entry -> {
-                        if (entry.getEntryType() == EntryType.ROWDATA) {
-                            publishCanalEvent(entry);
-                        }
-                    });
-                }
-                canalConnector.ack(batchId);
-            } catch (Exception e) {
-                logger.error("发送监听事件失败！batchId回滚,batchId=" + batchId, e);
-                canalConnector.rollback(batchId);
+  @Scheduled(fixedDelay = 100)
+  @Override
+  public void run() {
+    try {
+      int batchSize = 1000;
+      // Message message = connector.get(batchSize);
+      Message message = canalConnector.getWithoutAck(batchSize);
+      long batchId = message.getId();
+      logger.debug("scheduled_batchId=" + batchId);
+      try {
+        List<Entry> entries = message.getEntries();
+        if (batchId != -1 && entries.size() > 0) {
+          entries.forEach(entry -> {
+            if (entry.getEntryType() == EntryType.ROWDATA) {
+              publishCanalEvent(entry);
             }
-        } catch (Exception e) {
-            logger.error("canal_scheduled异常！", e);
+          });
         }
+        canalConnector.ack(batchId);
+      } catch (Exception e) {
+        logger.error("发送监听事件失败！batchId回滚,batchId=" + batchId, e);
+        canalConnector.rollback(batchId);
+      }
+    } catch (Exception e) {
+      logger.error("canal_scheduled异常！", e);
     }
+  }
 
-    private void publishCanalEvent(Entry entry) {
-        EventType eventType = entry.getHeader().getEventType();
-        switch (eventType) {
-            case INSERT:
-                applicationContext.publishEvent(new InsertCanalEvent(entry));
-                break;
-            case UPDATE:
-                applicationContext.publishEvent(new UpdateCanalEvent(entry));
-                break;
-            case DELETE:
-                applicationContext.publishEvent(new DeleteCanalEvent(entry));
-                break;
-            default:
-                break;
-        }
+  private void publishCanalEvent(Entry entry) {
+    EventType eventType = entry.getHeader().getEventType();
+    switch (eventType) {
+      case INSERT:
+        applicationContext.publishEvent(new InsertCanalEvent(entry));
+        break;
+      case UPDATE:
+        applicationContext.publishEvent(new UpdateCanalEvent(entry));
+        break;
+      case DELETE:
+        applicationContext.publishEvent(new DeleteCanalEvent(entry));
+        break;
+      default:
+        break;
     }
+  }
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-    }
+  @Override
+  public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    this.applicationContext = applicationContext;
+  }
 }

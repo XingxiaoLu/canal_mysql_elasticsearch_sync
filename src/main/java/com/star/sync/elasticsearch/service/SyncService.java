@@ -17,4 +17,8 @@ public interface SyncService {
   boolean syncByTable(SyncByTableRequest request);
 
   boolean syncAll();
+
+  boolean startSyncBinlog();
+
+  boolean isStartSyncBinlog();
 }

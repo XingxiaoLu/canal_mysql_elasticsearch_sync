@@ -34,6 +34,8 @@ public class SyncServiceImpl implements SyncService, InitializingBean, Disposabl
    */
   private ExecutorService cachedThreadPool;
 
+  private boolean startSyncBinlog = false;
+
   @Resource
   private BaseDao baseDao;
 
@@ -113,5 +115,26 @@ public class SyncServiceImpl implements SyncService, InitializingBean, Disposabl
 
     log.info("全量同步完成");
     return false;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.star.sync.elasticsearch.service.SyncService#startSyncBinlog()
+   */
+  @Override
+  public boolean startSyncBinlog() {
+    startSyncBinlog = true;
+    return true;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.star.sync.elasticsearch.service.SyncService#isStartSyncBinlog()
+   */
+  @Override
+  public boolean isStartSyncBinlog() {
+    return startSyncBinlog;
   }
 }

@@ -3,6 +3,7 @@ package com.star.sync.elasticsearch.scheduling;
 import java.util.List;
 import javax.annotation.Resource;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,6 +16,7 @@ import com.alibaba.otter.canal.protocol.Message;
 import com.star.sync.elasticsearch.event.DeleteCanalEvent;
 import com.star.sync.elasticsearch.event.InsertCanalEvent;
 import com.star.sync.elasticsearch.event.UpdateCanalEvent;
+import com.star.sync.elasticsearch.service.SyncService;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -27,34 +29,39 @@ import lombok.extern.slf4j.Slf4j;
 public class CanalScheduling implements Runnable, ApplicationContextAware {
   private ApplicationContext applicationContext;
 
+  @Autowired
+  private SyncService syncService;
+
   @Resource
   private CanalConnector canalConnector;
 
   @Scheduled(fixedDelay = 100)
   @Override
   public void run() {
-    try {
-      int batchSize = 1000;
-      // Message message = connector.get(batchSize);
-      Message message = canalConnector.getWithoutAck(batchSize);
-      long batchId = message.getId();
-      log.debug("scheduled_batchId=" + batchId);
+    if (syncService.isStartSyncBinlog()) {
       try {
-        List<Entry> entries = message.getEntries();
-        if (batchId != -1 && entries.size() > 0) {
-          entries.forEach(entry -> {
-            if (entry.getEntryType() == EntryType.ROWDATA) {
-              publishCanalEvent(entry);
-            }
-          });
+        int batchSize = 1000;
+        // Message message = connector.get(batchSize);
+        Message message = canalConnector.getWithoutAck(batchSize);
+        long batchId = message.getId();
+        log.debug("scheduled_batchId=" + batchId);
+        try {
+          List<Entry> entries = message.getEntries();
+          if (batchId != -1 && entries.size() > 0) {
+            entries.forEach(entry -> {
+              if (entry.getEntryType() == EntryType.ROWDATA) {
+                publishCanalEvent(entry);
+              }
+            });
+          }
+          canalConnector.ack(batchId);
+        } catch (Exception e) {
+          log.error("发送监听事件失败！batchId回滚,batchId=" + batchId, e);
+          canalConnector.rollback(batchId);
         }
-        canalConnector.ack(batchId);
       } catch (Exception e) {
-        log.error("发送监听事件失败！batchId回滚,batchId=" + batchId, e);
-        canalConnector.rollback(batchId);
+        log.error("canal_scheduled异常！", e);
       }
-    } catch (Exception e) {
-      log.error("canal_scheduled异常！", e);
     }
   }
 

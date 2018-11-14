@@ -56,8 +56,7 @@ public class SyncServiceImpl implements SyncService, InitializingBean, Disposabl
           String.format("配置文件中缺失database=%s和table=%s所对应的index和type的映射配置", request.getDatabase(),
               request.getTable()));
     }
-    long size = baseDao.count(request.getDatabase(), request.getDatabase());
-    if (size == 0) {
+    if (baseDao.selectMinPK(primaryKey, request.getDatabase(), request.getTable()) == null) {
       return true;
     }
 
@@ -113,7 +112,6 @@ public class SyncServiceImpl implements SyncService, InitializingBean, Disposabl
 
         log.info("开始同步-> 数据库: {}, 数据表: {}", database, table);
         syncByTable(request);
-        log.info("数据表同步完成-> 数据库: {}, 数据表: {}", database, table);
       }
     });
 

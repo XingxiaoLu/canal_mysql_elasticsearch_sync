@@ -8,9 +8,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Resource;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.star.sync.elasticsearch.dao.BaseDao;
 import com.star.sync.elasticsearch.model.DatabaseTableModel;
@@ -36,13 +36,13 @@ public class SyncServiceImpl implements SyncService, InitializingBean, Disposabl
 
   private boolean startSyncBinlog = false;
 
-  @Resource
+  @Autowired
   private BaseDao baseDao;
 
-  @Resource
+  @Autowired
   private MappingService mappingService;
 
-  @Resource
+  @Autowired
   private TransactionalService transactionalService;
 
   @Override
@@ -55,6 +55,10 @@ public class SyncServiceImpl implements SyncService, InitializingBean, Disposabl
       throw new IllegalArgumentException(
           String.format("配置文件中缺失database=%s和table=%s所对应的index和type的映射配置", request.getDatabase(),
               request.getTable()));
+    }
+    long size = baseDao.count(request.getDatabase(), request.getDatabase());
+    if (size == 0) {
+      return true;
     }
 
     long minPK = Optional.ofNullable(request.getFrom())

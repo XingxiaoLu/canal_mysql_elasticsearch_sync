@@ -4,14 +4,13 @@ import javax.annotation.Resource;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import com.star.sync.elasticsearch.model.request.SyncByTableRequest;
 import com.star.sync.elasticsearch.model.response.Response;
 import com.star.sync.elasticsearch.service.SyncService;
 import com.star.sync.elasticsearch.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 /**

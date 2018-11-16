@@ -1,6 +1,6 @@
 package com.star.sync.elasticsearch.service.impl;
 
-import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -12,6 +12,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.google.common.collect.Lists;
 import com.star.sync.elasticsearch.dao.BaseDao;
 import com.star.sync.elasticsearch.model.DatabaseTableModel;
 import com.star.sync.elasticsearch.model.IndexTypeModel;
@@ -19,6 +20,7 @@ import com.star.sync.elasticsearch.model.request.SyncByTableRequest;
 import com.star.sync.elasticsearch.service.MappingService;
 import com.star.sync.elasticsearch.service.SyncService;
 import com.star.sync.elasticsearch.service.TransactionalService;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -45,6 +47,8 @@ public class SyncServiceImpl implements SyncService, InitializingBean, Disposabl
   @Autowired
   private TransactionalService transactionalService;
 
+  public final static long STEP_LENGTH = 5 * 100 * 10000;
+
   @Override
   public boolean syncByTable(SyncByTableRequest request) {
     IndexTypeModel indexTypeModel = mappingService
@@ -64,24 +68,64 @@ public class SyncServiceImpl implements SyncService, InitializingBean, Disposabl
         .orElse(baseDao.selectMinPK(primaryKey, request.getDatabase(), request.getTable()));
     long maxPK = Optional.ofNullable(request.getTo())
         .orElse(baseDao.selectMaxPK(primaryKey, request.getDatabase(), request.getTable()));
+    minPK = Optional.ofNullable(minPK).orElse(0l);
+    maxPK = Optional.ofNullable(maxPK).orElse(0l);
+    long number = maxPK - minPK;
+
+    List<SplitResult> splitResults = split(number, minPK);
+    for (SplitResult splitResult : splitResults) {
+      commitJob(request, indexTypeModel, primaryKey, splitResult.getFrom(), splitResult.getTo());
+    }
+    return true;
+  }
+
+  /**
+   * @param request
+   * @param indexTypeModel
+   * @param primaryKey
+   * @param from
+   * @param to
+   */
+  private void commitJob(SyncByTableRequest request, IndexTypeModel indexTypeModel,
+      String primaryKey, long from, long to) {
     cachedThreadPool.submit(() -> {
       try {
-        for (long i = minPK; i < maxPK; i += request.getStepSize()) {
+        for (long i = from; i < to; i += request.getStepSize()) {
           transactionalService.batchInsertElasticsearch(request, primaryKey, i,
               i + request.getStepSize(), indexTypeModel);
-          log.info(String.format("当前同步pk=%s，总共total=%s，进度=%s%%", i, maxPK,
-              new BigDecimal(i * 100).divide(new BigDecimal(maxPK), 3, BigDecimal.ROUND_HALF_UP)));
+          log.info("表 {} from {} to {} : 当前同步pk={}, 进度={}%", request.getTable(), from, to, i,
+              (i - from) * 100L / (to - from));
         }
+        log.info("表 {} from {} to {} 同步完成", request.getTable(), from, to);
       } catch (Exception e) {
+        log.error("数据库 {} 数据表 {} 操作异常", request.getDatabase(), request.getTable());
         log.error("批量转换并插入Elasticsearch异常", e);
       }
     });
-    return true;
+  }
+
+  private List<SplitResult> split(long number, long minPk) {
+    List<SplitResult> result = Lists.newArrayList();
+    long time = number / STEP_LENGTH + 1;
+    System.out.println("Time=" + time);
+    for (int i = 0; i < time; i++) {
+      SplitResult r = new SplitResult();
+      r.setFrom(minPk + i * STEP_LENGTH);
+      r.setTo(minPk + Math.min((i + 1) * STEP_LENGTH, number));
+      result.add(r);
+    }
+    return result;
+  }
+
+  @Data
+  public static class SplitResult {
+    private long from;
+    private long to;
   }
 
   @Override
   public void afterPropertiesSet() throws Exception {
-    cachedThreadPool = new ThreadPoolExecutor(5, 5, 0L, TimeUnit.MILLISECONDS,
+    cachedThreadPool = new ThreadPoolExecutor(100, 500, 0L, TimeUnit.MILLISECONDS,
         new LinkedBlockingQueue<>(), (ThreadFactory) Thread::new);
   }
 

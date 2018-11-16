@@ -82,7 +82,7 @@ public class MappingServiceImpl implements MappingService, InitializingBean {
     mysqlTypeElasticsearchTypeMapping.put("time", data -> LocalDateTime.parse(data, formatter));
     mysqlTypeElasticsearchTypeMapping.put("float", Double::valueOf);
     mysqlTypeElasticsearchTypeMapping.put("double", Double::valueOf);
-    mysqlTypeElasticsearchTypeMapping.put("decimal", Double::valueOf);
+    mysqlTypeElasticsearchTypeMapping.put("decimal", data -> data);
   }
 
   public Map<String, String> getDbEsMapping() {

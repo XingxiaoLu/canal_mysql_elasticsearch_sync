@@ -1,7 +1,6 @@
 package com.star.sync.elasticsearch.service.impl;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -55,9 +54,7 @@ public class TransactionalServiceImpl implements TransactionalService {
         map.put(key,
             LocalDateTime.ofInstant(((Timestamp) value).toInstant(), ZoneId.systemDefault()));
       } else if (value instanceof BigDecimal) {
-        map.put(key, ((BigDecimal) value).longValue());
-      } else if (value instanceof java.math.BigInteger) {
-        map.put(key, ((BigInteger) value).longValue());
+        map.put(key, ((BigDecimal) value).toPlainString());
       }
     }));
     List<Map<String, Object>> target = new ArrayList<Map<String, Object>>();

@@ -4,10 +4,12 @@ import java.util.List;
 import java.util.Optional;
 import javax.annotation.Resource;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.alibaba.otter.canal.protocol.CanalEntry.Column;
 import com.alibaba.otter.canal.protocol.CanalEntry.RowData;
 import com.star.sync.elasticsearch.event.DeleteCanalEvent;
+import com.star.sync.elasticsearch.scheduling.DeleteEsDataScheduling;
 import com.star.sync.elasticsearch.service.ElasticsearchService;
 import com.star.sync.elasticsearch.service.MappingService;
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +25,8 @@ public class DeleteCanalListener extends AbstractCanalListener<DeleteCanalEvent>
   @Resource
   private MappingService mappingService;
 
-  @Resource
-  private ElasticsearchService elasticsearchService;
+  @Autowired
+  private DeleteEsDataScheduling deleteScheduling;
 
   @Override
   protected void doSync(String database, String table, String index, String type, RowData rowData) {
@@ -42,7 +44,8 @@ public class DeleteCanalListener extends AbstractCanalListener<DeleteCanalEvent>
     }
     log.debug("insert_column_id_info insert主键id,database=" + database + ",table=" + table + ",id="
         + idColumn.getValue());
-    elasticsearchService.deleteById(index, type, idColumn.getValue());
+    // elasticsearchService.deleteById(index, type, idColumn.getValue());
+    deleteScheduling.addDeleteData(index, type, idColumn.getValue());
     log.debug("insert_es_info 同步es插入操作成功！database=" + database + ",table=" + table + ",id="
         + idColumn.getValue());
   }

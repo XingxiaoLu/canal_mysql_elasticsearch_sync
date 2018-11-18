@@ -1,5 +1,6 @@
 package com.star.sync.elasticsearch.service.impl;
 
+import java.util.Collection;
 import java.util.Map;
 import javax.annotation.Resource;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
@@ -54,5 +55,39 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
   @Override
   public void deleteById(String index, String type, String id) {
     transportClient.prepareDelete(index, type, id).get();
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.star.sync.elasticsearch.service.ElasticsearchService#batchUpdateById(java.lang.String,
+   * java.lang.String, java.util.Map)
+   */
+  @Override
+  public void batchUpdateById(String index, String type,
+      Map<String, Map<String, Object>> idDataMap) {
+    this.batchInsertById(index, type, idDataMap);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.star.sync.elasticsearch.service.ElasticsearchService#batchDeleteById(java.lang.String,
+   * java.lang.String, java.util.Collection)
+   */
+  @Override
+  public void batchDeleteById(String index, String type, Collection<String> ids) {
+    BulkRequestBuilder bulkRequestBuilder = transportClient.prepareBulk();
+    ids.forEach(id -> bulkRequestBuilder.add(transportClient.prepareIndex(index, type, id)));
+
+    try {
+      BulkResponse bulkResponse = bulkRequestBuilder.execute().get();
+      if (bulkResponse.hasFailures()) {
+        log.error("elasticsearch批量删除错误, index=" + index + ", type=" + type + ", cause:"
+            + bulkResponse.buildFailureMessage());
+      }
+    } catch (Exception e) {
+      log.error("elasticsearch批量删除错误, index=" + index + ", type=" + type + ".", e);
+    }
   }
 }

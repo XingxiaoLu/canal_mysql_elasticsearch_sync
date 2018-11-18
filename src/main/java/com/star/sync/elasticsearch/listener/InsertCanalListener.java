@@ -5,10 +5,12 @@ import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Resource;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.alibaba.otter.canal.protocol.CanalEntry.Column;
 import com.alibaba.otter.canal.protocol.CanalEntry.RowData;
 import com.star.sync.elasticsearch.event.InsertCanalEvent;
+import com.star.sync.elasticsearch.scheduling.InsertEsDataScheduling;
 import com.star.sync.elasticsearch.service.ElasticsearchService;
 import com.star.sync.elasticsearch.service.MappingService;
 import com.star.sync.elasticsearch.util.JsonUtil;
@@ -26,8 +28,8 @@ public class InsertCanalListener extends AbstractCanalListener<InsertCanalEvent>
   @Resource
   private MappingService mappingService;
 
-  @Resource
-  private ElasticsearchService elasticsearchService;
+  @Autowired
+  private InsertEsDataScheduling insertScheduling;
 
   @Override
   protected void doSync(String database, String table, String index, String type, RowData rowData) {
@@ -46,7 +48,8 @@ public class InsertCanalListener extends AbstractCanalListener<InsertCanalEvent>
     log.debug("insert_column_id_info insert主键id,database=" + database + ",table=" + table + ",id="
         + idColumn.getValue());
     Map<String, Object> dataMap = parseColumnsToMap(columns);
-    elasticsearchService.insertById(index, type, idColumn.getValue(), dataMap);
+    // elasticsearchService.insertById(index, type, idColumn.getValue(), dataMap);
+    insertScheduling.addInsertData(index, type, idColumn.getValue(), dataMap);
     log.debug("insert_es_info 同步es插入操作成功！database=" + database + ",table=" + table + ",data="
         + JsonUtil.toJson(dataMap));
   }

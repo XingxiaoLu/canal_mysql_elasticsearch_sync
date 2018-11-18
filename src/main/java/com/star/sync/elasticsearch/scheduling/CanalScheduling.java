@@ -35,7 +35,7 @@ public class CanalScheduling implements Runnable, ApplicationContextAware {
   @Resource
   private CanalConnector canalConnector;
 
-  @Scheduled(fixedDelay = 100)
+  @Scheduled(fixedRate = 100)
   @Override
   public void run() {
     if (syncService.isStartSyncBinlog()) {
@@ -44,12 +44,14 @@ public class CanalScheduling implements Runnable, ApplicationContextAware {
         // Message message = connector.get(batchSize);
         Message message = canalConnector.getWithoutAck(batchSize);
         long batchId = message.getId();
-        log.debug("scheduled_batchId=" + batchId);
+        log.info("scheduled_batchId=" + batchId);
         try {
           List<Entry> entries = message.getEntries();
           if (batchId != -1 && entries.size() > 0) {
             entries.forEach(entry -> {
               if (entry.getEntryType() == EntryType.ROWDATA) {
+                log.info("开始处理binlog:{}文件的{}", entry.getHeader().getLogfileName(),
+                    entry.getHeader().getLogfileOffset());
                 publishCanalEvent(entry);
               }
             });

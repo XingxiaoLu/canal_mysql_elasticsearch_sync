@@ -48,6 +48,7 @@ public class SyncController {
   }
 
   @RequestMapping(value = "/binlog", method = RequestMethod.GET)
+  @ResponseBody
   public String startSyncBinlog() {
     return Response.success(syncService.startSyncBinlog()).toString();
   }

@@ -1,5 +1,6 @@
 package com.star.sync.elasticsearch.service;
 
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -15,4 +16,8 @@ public interface ElasticsearchService {
   void update(String index, String type, String id, Map<String, Object> dataMap);
 
   void deleteById(String index, String type, String id);
+
+  void batchUpdateById(String index, String type, Map<String, Map<String, Object>> idDataMap);
+
+  void batchDeleteById(String index, String type, Collection<String> ids);
 }

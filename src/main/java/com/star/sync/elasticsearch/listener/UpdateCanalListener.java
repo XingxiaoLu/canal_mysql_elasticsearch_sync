@@ -7,10 +7,12 @@ import javax.annotation.Resource;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.alibaba.otter.canal.protocol.CanalEntry.Column;
 import com.alibaba.otter.canal.protocol.CanalEntry.RowData;
 import com.star.sync.elasticsearch.event.UpdateCanalEvent;
+import com.star.sync.elasticsearch.scheduling.UpdateEsDataScheduling;
 import com.star.sync.elasticsearch.service.ElasticsearchService;
 import com.star.sync.elasticsearch.service.MappingService;
 import lombok.extern.slf4j.Slf4j;
@@ -27,8 +29,8 @@ public class UpdateCanalListener extends AbstractCanalListener<UpdateCanalEvent>
   @Resource
   private MappingService mappingService;
 
-  @Resource
-  private ElasticsearchService elasticsearchService;
+  @Autowired
+  private UpdateEsDataScheduling updateScheduling;
 
   @Override
   protected void doSync(String database, String table, String index, String type, RowData rowData) {
@@ -47,7 +49,8 @@ public class UpdateCanalListener extends AbstractCanalListener<UpdateCanalEvent>
     log.debug("update_column_id_info update主键id,database=" + database + ",table=" + table + ",id="
         + idColumn.getValue());
     Map<String, Object> dataMap = parseColumnsToMap(columns);
-    elasticsearchService.update(index, type, idColumn.getValue(), dataMap);
+    // elasticsearchService.update(index, type, idColumn.getValue(), dataMap);
+    updateScheduling.addUpdateData(index, type, idColumn.getValue(), dataMap);
     log.debug(
         "update_es_info 同步es插入操作成功！database=" + database + ",table=" + table + ",data=" + dataMap);
   }

@@ -74,15 +74,24 @@ public class MappingServiceImpl implements MappingService, InitializingBean {
     });
 
     mysqlTypeElasticsearchTypeMapping = Maps.newHashMap();
+    mysqlTypeElasticsearchTypeMapping.put("tinyint(1)", data -> {
+      if ("1".equals(data)) {
+        return true;
+      } else {
+        return false;
+      }
+    });
     mysqlTypeElasticsearchTypeMapping.put("char", data -> data);
     mysqlTypeElasticsearchTypeMapping.put("text", data -> data);
     mysqlTypeElasticsearchTypeMapping.put("blob", data -> data);
-    mysqlTypeElasticsearchTypeMapping.put("int", Long::valueOf);
+    mysqlTypeElasticsearchTypeMapping.put("int(11)", Long::valueOf);
+    mysqlTypeElasticsearchTypeMapping.put("bigint(20)", Long::valueOf);
     mysqlTypeElasticsearchTypeMapping.put("date", data -> LocalDateTime.parse(data, formatter));
     mysqlTypeElasticsearchTypeMapping.put("time", data -> LocalDateTime.parse(data, formatter));
     mysqlTypeElasticsearchTypeMapping.put("float", Double::valueOf);
     mysqlTypeElasticsearchTypeMapping.put("double", Double::valueOf);
     mysqlTypeElasticsearchTypeMapping.put("decimal", data -> data);
+
   }
 
   public Map<String, String> getDbEsMapping() {

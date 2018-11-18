@@ -50,7 +50,7 @@ public class CanalScheduling implements Runnable, ApplicationContextAware {
           if (batchId != -1 && entries.size() > 0) {
             entries.forEach(entry -> {
               if (entry.getEntryType() == EntryType.ROWDATA) {
-                log.info("开始处理binlog:{}文件的{}", entry.getHeader().getLogfileName(),
+                log.debug("开始处理binlog:{}文件的{}", entry.getHeader().getLogfileName(),
                     entry.getHeader().getLogfileOffset());
                 publishCanalEvent(entry);
               }

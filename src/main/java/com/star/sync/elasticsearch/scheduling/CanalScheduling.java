@@ -44,7 +44,7 @@ public class CanalScheduling implements Runnable, ApplicationContextAware {
         // Message message = connector.get(batchSize);
         Message message = canalConnector.getWithoutAck(batchSize);
         long batchId = message.getId();
-        log.info("scheduled_batchId=" + batchId);
+        log.debug("scheduled_batchId=" + batchId);
         try {
           List<Entry> entries = message.getEntries();
           if (batchId != -1 && entries.size() > 0) {

@@ -107,7 +107,6 @@ public class SyncServiceImpl implements SyncService, InitializingBean, Disposabl
   private List<SplitResult> split(long number, long minPk) {
     List<SplitResult> result = Lists.newArrayList();
     long time = number / STEP_LENGTH + 1;
-    System.out.println("Time=" + time);
     for (int i = 0; i < time; i++) {
       SplitResult r = new SplitResult();
       r.setFrom(minPk + i * STEP_LENGTH);

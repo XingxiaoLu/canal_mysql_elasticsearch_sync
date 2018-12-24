@@ -35,6 +35,10 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
 
     idDataMap.forEach((id, dataMap) -> bulkRequestBuilder
         .add(transportClient.prepareIndex(index, type, id).setSource(dataMap)));
+
+    if (bulkRequestBuilder.numberOfActions() == 0) {
+      return;
+    }
     try {
       BulkResponse bulkResponse = bulkRequestBuilder.execute().get();
       if (bulkResponse.hasFailures()) {
@@ -80,6 +84,9 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
     BulkRequestBuilder bulkRequestBuilder = transportClient.prepareBulk();
     ids.forEach(id -> bulkRequestBuilder.add(transportClient.prepareIndex(index, type, id)));
 
+    if (bulkRequestBuilder.numberOfActions() == 0) {
+      return;
+    }
     try {
       BulkResponse bulkResponse = bulkRequestBuilder.execute().get();
       if (bulkResponse.hasFailures()) {

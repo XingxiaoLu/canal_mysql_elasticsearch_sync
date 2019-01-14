@@ -1,5 +1,6 @@
 package com.star.sync.elasticsearch.service;
 
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -8,11 +9,15 @@ import java.util.Map;
  * @since 2017-08-26 16:19:00
  */
 public interface ElasticsearchService {
-    void insertById(String index, String type, String id, Map<String, Object> dataMap);
+  void insertById(String index, String type, String id, Map<String, Object> dataMap);
 
-    void batchInsertById(String index, String type, Map<String, Map<String, Object>> idDataMap);
+  void batchInsertById(String index, String type, Map<String, Map<String, Object>> idDataMap);
 
-    void update(String index, String type, String id, Map<String, Object> dataMap);
+  void update(String index, String type, String id, Map<String, Object> dataMap);
 
-    void deleteById(String index, String type, String id);
+  void deleteById(String index, String type, String id);
+
+  void batchUpdateById(String index, String type, Map<String, Map<String, Object>> idDataMap);
+
+  void batchDeleteById(String index, String type, Collection<String> ids);
 }

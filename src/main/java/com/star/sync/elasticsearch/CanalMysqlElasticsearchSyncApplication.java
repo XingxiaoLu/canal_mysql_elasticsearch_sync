@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 @MapperScan("com.star.sync.elasticsearch.dao")
 public class CanalMysqlElasticsearchSyncApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(CanalMysqlElasticsearchSyncApplication.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(CanalMysqlElasticsearchSyncApplication.class, args);
+  }
 }

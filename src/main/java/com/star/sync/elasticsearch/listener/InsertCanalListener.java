@@ -11,7 +11,6 @@ import com.alibaba.otter.canal.protocol.CanalEntry.Column;
 import com.alibaba.otter.canal.protocol.CanalEntry.RowData;
 import com.star.sync.elasticsearch.event.InsertCanalEvent;
 import com.star.sync.elasticsearch.scheduling.InsertEsDataScheduling;
-import com.star.sync.elasticsearch.service.ElasticsearchService;
 import com.star.sync.elasticsearch.service.MappingService;
 import com.star.sync.elasticsearch.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;

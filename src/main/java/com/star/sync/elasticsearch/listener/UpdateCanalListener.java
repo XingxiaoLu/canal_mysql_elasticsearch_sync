@@ -5,15 +5,12 @@ import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Resource;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.alibaba.otter.canal.protocol.CanalEntry.Column;
 import com.alibaba.otter.canal.protocol.CanalEntry.RowData;
 import com.star.sync.elasticsearch.event.UpdateCanalEvent;
 import com.star.sync.elasticsearch.scheduling.UpdateEsDataScheduling;
-import com.star.sync.elasticsearch.service.ElasticsearchService;
 import com.star.sync.elasticsearch.service.MappingService;
 import lombok.extern.slf4j.Slf4j;
 

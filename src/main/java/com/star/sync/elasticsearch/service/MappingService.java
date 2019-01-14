@@ -1,8 +1,8 @@
 package com.star.sync.elasticsearch.service;
 
+import java.util.Map;
 import com.star.sync.elasticsearch.model.DatabaseTableModel;
 import com.star.sync.elasticsearch.model.IndexTypeModel;
-import java.util.Map;
 
 /**
  * 配置文件映射服务

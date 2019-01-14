@@ -1,16 +1,14 @@
 package com.star.sync.elasticsearch.service.impl;
 
-import com.google.common.collect.Maps;
+import java.time.LocalDateTime;
+import java.util.Map;
+import javax.annotation.Resource;
 import org.elasticsearch.client.transport.TransportClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import javax.annotation.Resource;
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.Map;
-import static org.junit.Assert.*;
+import com.google.common.collect.Maps;
 
 /**
  * @author <a href="mailto:wangchao.star@gmail.com">wangchao</a>

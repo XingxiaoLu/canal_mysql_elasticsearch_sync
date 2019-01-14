@@ -10,7 +10,6 @@ import com.alibaba.otter.canal.protocol.CanalEntry.Column;
 import com.alibaba.otter.canal.protocol.CanalEntry.RowData;
 import com.star.sync.elasticsearch.event.DeleteCanalEvent;
 import com.star.sync.elasticsearch.scheduling.DeleteEsDataScheduling;
-import com.star.sync.elasticsearch.service.ElasticsearchService;
 import com.star.sync.elasticsearch.service.MappingService;
 import lombok.extern.slf4j.Slf4j;
 

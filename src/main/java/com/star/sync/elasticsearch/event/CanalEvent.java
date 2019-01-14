@@ -1,7 +1,7 @@
 package com.star.sync.elasticsearch.event;
 
-import com.alibaba.otter.canal.protocol.CanalEntry.Entry;
 import org.springframework.context.ApplicationEvent;
+import com.alibaba.otter.canal.protocol.CanalEntry.Entry;
 
 /**
  * @author <a href="mailto:wangchao.star@gmail.com">wangchao</a>

@@ -1,91 +1,21 @@
 # canal_mysql_elasticsearch_sync 支持请star✨
 
-**canal于v1.1.2版本后，已支持自动同步到Elasticsearch。赞canal！[canal传送门](https://github.com/alibaba/canal)**
+在王超同学canal_mysql_elasticsearch_sync基础上进行了改进，对原有全量同步接口进行了部分改进，采用多线程的方式进行同步，避免同步进度赶不上数据写入速度的问题。
 
-基于 *canal* 的 *Mysql* 与 *Elasticsearch* 实时同步的 *javaweb* 服务。      
-canal是阿里巴巴mysql数据库binlog的增量订阅&消费组件。
+接口调整如下：
 
-## 工作原理
-### 全量
-暴露Http接口（接口定义见[wiki](https://github.com/starcwang/canal_mysql_elasticsearch_sync/wiki/HttpApi)），待调用后开启后台线程，通过主键分批同步指定数据库中数据到Elasticsearch
-> 读取数据库会加**读锁**   
-> 主键必须为数字类型
-#### 过程
-1. 首先会根据所给的数据库主键字段，拿到最大的主键数字max_id；
-2. 设*pk*=min_id（默认是数据库中的主键最小值）；
-2. 加读锁🔐，从数据库中取出*pk* —— *pk*+*stepSize* 大小的数据（默认500）的数据；
-3. 插入到Elasticsearch中；
-4. 释放读锁🔐，pk累加*stepSize*，循环3.操作，直到*pk*>*max_id*
+1. 全量同步所有表
 
-### 增量
-循环监听canal通过binlog同步过来的event事件，区别增删改进行与之对应的Elasticsearch的操作。
-> 目前只解析了 insert、update、delete，其它数据库操作会被忽略
+   适用于生产环境已经有大量数据表的情况，不需要按照byTable接口一个一个同步，一个接口开启所有的表的全量同步 。系统会自动为每个表格分配一定数量的线程进行处理 。线程分配逻辑目前是按照数据表内的数据量多少决定的，目前是每500万条数据一个处理线程。
 
-## 默认相关字段映射
-<table  class="bbcode"> 
-<tr>  
-<td>Mysql字段类型</td>
-<td>Elasticsearch类型</td>
-</tr>
-<tr>  
-<td>char</td>
-<td>{"type": "text", "fields": {"keyword": {"type": "keyword", "ignore_above": 256}}</td>
-</tr>
-<tr>  
-<td>text</td>
-<td>{"type": "text", "fields": {"keyword": {"type": "keyword", "ignore_above": 256}}</td>
-</tr>
-<tr>  
-<td>blob</td>
-<td>{"type": "text", "fields": {"keyword": {"type": "keyword", "ignore_above": 256}}</td>
-</tr>
-<tr>  
-<td>int</td>
-<td>{"type": "long"}</td>
-</tr>
-<tr>  
-<td>date</td>
-<td>{"type": "date"}</td>
-</tr>
-<tr>  
-<td>time</td>
-<td>{"type": "date"}</td>
-</tr>
-<tr>  
-<td>float</td>
-<td>{"type": "float"}</td>
-</tr>
-<tr>  
-<td>double</td>
-<td>{"type": "float"}</td>
-</tr>
-<tr>  
-<td>decimal</td>
-<td>{"type": "float"}</td>
-</tr>
-<tr>  
-<td>其它</td>
-<td>{"type": "text", "fields": {"keyword": {"type": "keyword", "ignore_above": 256}}</td>
-</tr>
-</table> 
+   请求方式：GET
 
-## 注意事项
-- Mysql的binlog格式必须为**ROW**
-- 因为有行锁，Mysql中table使用的存储引擎须为**InnoDB**
-- 由于使用binlog进行增量同步，和数据库主从类似，不可避免的会有一定的主从延迟，延迟时间取决于机房网络、机器负载、数据量大小等
-- Elasticsearch支持的版本为**5.x**
-- canal已测试版为**v1.0.24**，其他版本请自行测试
-- 增量同步只监听了 **INSERT、UPDATE、DELETE**，其它如建表、删表等尚未支持
-- 建议Elasticsearch的mapping手动来创建，因为默认的创建方式不能保证满足业务需求
+   Url: http://localhost:8828/sync/all
 
-## 相关文档
-- [wiki](https://github.com/starcwang/canal_mysql_elasticsearch_sync/wiki)
-- [HttpApi](https://github.com/starcwang/canal_mysql_elasticsearch_sync/wiki/HttpApi)
-- [QuickStart](https://github.com/starcwang/canal_mysql_elasticsearch_sync/wiki/QuickStart)
+2. 开始binlog同步
 
-## 联系方式
-如果有不合理的地方，还请不吝赐教。
-- QQ：760823254
-- 邮件：wangchao.star@gmail.com   
- 
-**支持记得star✨**
+   原有的逻辑中，无法控制canel同步的开始时间，加入该接口手动控制同步canel的开始时间。
+
+   请求方式： GET
+
+   Url: http://localhost:8828/sync/binlog

@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author <a href="mailto:wangchao.star@gmail.com">wangchao</a>
+ * @author <a href="mailto:lu.xingxiao@gmail.com">luxingxiao</a>
  * @version 1.0
  * @since 2017-08-29 19:32:00
  */

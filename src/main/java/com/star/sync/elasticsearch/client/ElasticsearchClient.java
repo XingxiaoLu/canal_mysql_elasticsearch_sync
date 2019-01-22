@@ -6,9 +6,11 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import com.star.sync.elasticsearch.config.ElasticsearchProperties;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -17,28 +19,23 @@ import lombok.extern.slf4j.Slf4j;
  * @since 2017-08-25 17:32:00
  */
 @Component
+@EnableConfigurationProperties(ElasticsearchProperties.class)
 @Slf4j
 public class ElasticsearchClient implements DisposableBean {
   private TransportClient transportClient;
-
-  @Value("${elasticsearch.cluster.name}")
-  private String clusterName;
-  @Value("${elasticsearch.host}")
-  private String host;
-  @Value("${elasticsearch.port}")
-  private String port;
-  @Value("${elasticsearch.username}")
-  private String username;
-  @Value("${elasticsearch.password}")
-  private String password;
+  @Autowired
+  private ElasticsearchProperties elasticsearchProperties;
 
   @Bean
   public TransportClient getTransportClient() throws Exception {
-    Settings settings = Settings.builder().put("cluster.name", clusterName)
-        .put("client.transport.sniff", true).put("elasticsearch.username", username)
-        .put("elasticsearch.password", password).build();
+    Settings settings =
+        Settings.builder().put("cluster.name", elasticsearchProperties.getClustername())
+            .put("client.transport.sniff", true)
+            .put("elasticsearch.username", elasticsearchProperties.getUsername())
+            .put("elasticsearch.password", elasticsearchProperties.getPassword()).build();
     transportClient = new PreBuiltTransportClient(settings).addTransportAddress(
-        new InetSocketTransportAddress(InetAddress.getByName(host), Integer.valueOf(port)));
+        new InetSocketTransportAddress(InetAddress.getByName(elasticsearchProperties.getHost()),
+            Integer.valueOf(elasticsearchProperties.getPort())));
     log.info("elasticsearch transportClient 连接成功");
     return transportClient;
   }

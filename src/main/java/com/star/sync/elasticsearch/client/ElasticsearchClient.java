@@ -27,11 +27,16 @@ public class ElasticsearchClient implements DisposableBean {
   private String host;
   @Value("${elasticsearch.port}")
   private String port;
+  @Value("${elasticsearch.username}")
+  private String username;
+  @Value("${elasticsearch.password}")
+  private String password;
 
   @Bean
   public TransportClient getTransportClient() throws Exception {
     Settings settings = Settings.builder().put("cluster.name", clusterName)
-        .put("client.transport.sniff", true).build();
+        .put("client.transport.sniff", true).put("elasticsearch.username", username)
+        .put("elasticsearch.password", password).build();
     transportClient = new PreBuiltTransportClient(settings).addTransportAddress(
         new InetSocketTransportAddress(InetAddress.getByName(host), Integer.valueOf(port)));
     log.info("elasticsearch transportClient 连接成功");

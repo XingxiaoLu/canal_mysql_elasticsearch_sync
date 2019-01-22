@@ -13,6 +13,7 @@ import com.alibaba.otter.canal.protocol.CanalEntry.Entry;
 import com.alibaba.otter.canal.protocol.CanalEntry.EntryType;
 import com.alibaba.otter.canal.protocol.CanalEntry.EventType;
 import com.alibaba.otter.canal.protocol.Message;
+import com.star.sync.elasticsearch.client.CanalDestinationsManager;
 import com.star.sync.elasticsearch.event.DeleteCanalEvent;
 import com.star.sync.elasticsearch.event.InsertCanalEvent;
 import com.star.sync.elasticsearch.event.UpdateCanalEvent;
@@ -32,38 +33,40 @@ public class CanalScheduling implements Runnable, ApplicationContextAware {
   @Autowired
   private SyncService syncService;
 
-  @Resource
-  private CanalConnector canalConnector;
+  @Autowired
+  private CanalDestinationsManager canalDestinationsManager;
 
   @Scheduled(fixedRate = 100)
   @Override
   public void run() {
     if (syncService.isStartSyncBinlog()) {
-      try {
-        int batchSize = 1000;
-        // Message message = connector.get(batchSize);
-        Message message = canalConnector.getWithoutAck(batchSize);
-        long batchId = message.getId();
-        log.debug("scheduled_batchId=" + batchId);
+      canalDestinationsManager.getCanalConnectors().forEach(canalConnector -> {
         try {
-          List<Entry> entries = message.getEntries();
-          if (batchId != -1 && entries.size() > 0) {
-            entries.forEach(entry -> {
-              if (entry.getEntryType() == EntryType.ROWDATA) {
-                log.info("开始处理binlog:{}文件的{}", entry.getHeader().getLogfileName(),
-                    entry.getHeader().getLogfileOffset());
-                publishCanalEvent(entry);
-              }
-            });
+          int batchSize = 1000;
+          // Message message = connector.get(batchSize);
+          Message message = canalConnector.getWithoutAck(batchSize);
+          long batchId = message.getId();
+          log.debug("scheduled_batchId=" + batchId);
+          try {
+            List<Entry> entries = message.getEntries();
+            if (batchId != -1 && entries.size() > 0) {
+              entries.forEach(entry -> {
+                if (entry.getEntryType() == EntryType.ROWDATA) {
+                  log.info("开始处理binlog:{}文件的{}", entry.getHeader().getLogfileName(),
+                      entry.getHeader().getLogfileOffset());
+                  publishCanalEvent(entry);
+                }
+              });
+            }
+            canalConnector.ack(batchId);
+          } catch (Exception e) {
+            log.error("发送监听事件失败！batchId回滚,batchId=" + batchId, e);
+            canalConnector.rollback(batchId);
           }
-          canalConnector.ack(batchId);
         } catch (Exception e) {
-          log.error("发送监听事件失败！batchId回滚,batchId=" + batchId, e);
-          canalConnector.rollback(batchId);
+          log.error("canal_scheduled异常！", e);
         }
-      } catch (Exception e) {
-        log.error("canal_scheduled异常！", e);
-      }
+      });
     }
   }
 

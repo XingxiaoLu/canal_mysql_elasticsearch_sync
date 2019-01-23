@@ -35,8 +35,7 @@ public class ElasticsearchClient implements DisposableBean {
         Settings.builder().put("cluster.name", elasticsearchProperties.getClustername())
             .put("client.transport.sniff", true)
             .put(SSLConfigConstants.SEARCHGUARD_SSL_TRANSPORT_ENFORCE_HOSTNAME_VERIFICATION, false)
-            .put("elasticsearch.username", elasticsearchProperties.getUsername())
-            .put("elasticsearch.password", elasticsearchProperties.getPassword()).build();
+            .build();
     transportClient =
         new PreBuiltTransportClient(settings, SearchGuardPlugin.class).addTransportAddress(
             new InetSocketTransportAddress(InetAddress.getByName(elasticsearchProperties.getHost()),

@@ -48,10 +48,12 @@
 		<dependency>
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>transport</artifactId>
+			<version>6.5.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
+			<version>6.5.4</version>
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba.otter</groupId>
@@ -89,11 +91,18 @@
 			<version>2.0.4</version>
 		</dependency>
 		<dependency>
+			<groupId>org.elasticsearch.plugin</groupId>
+			<artifactId>transport-netty4-client</artifactId>
+			<version>6.5.4</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.floragunn/search-guard-6 -->
+		<dependency>
 			<groupId>com.floragunn</groupId>
 			<artifactId>search-guard-6</artifactId>
-			<version>6.5.4-24.0-api</version>
+			<version>6.5.4-24.0</version>
 			<scope>provided</scope>
 		</dependency>
+
 	</dependencies>
 
 	<build>

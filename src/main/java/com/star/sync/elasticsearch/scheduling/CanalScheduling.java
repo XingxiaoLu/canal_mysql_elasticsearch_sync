@@ -10,7 +10,9 @@ import org.springframework.stereotype.Component;
 import com.alibaba.otter.canal.protocol.CanalEntry.Entry;
 import com.alibaba.otter.canal.protocol.CanalEntry.EntryType;
 import com.alibaba.otter.canal.protocol.CanalEntry.EventType;
+import com.alibaba.otter.canal.protocol.CanalEntry.RowChange;
 import com.alibaba.otter.canal.protocol.Message;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.star.sync.elasticsearch.client.CanalDestinationsManager;
 import com.star.sync.elasticsearch.event.DeleteCanalEvent;
 import com.star.sync.elasticsearch.event.InsertCanalEvent;
@@ -49,6 +51,14 @@ public class CanalScheduling implements Runnable, ApplicationContextAware {
             List<Entry> entries = message.getEntries();
             if (batchId != -1 && entries.size() > 0) {
               entries.forEach(entry -> {
+                try {
+                  RowChange rowChange = RowChange.parseFrom(entry.getStoreValue());
+                  log.info("DdlSchemaName:{}, EventType:{}, Sql:{}", rowChange.getDdlSchemaName(),
+                      rowChange.getEventType(), rowChange.getSql());
+                } catch (InvalidProtocolBufferException e) {
+                  log.error("InvalidProtocolBufferException", e);
+
+                }
                 if (entry.getEntryType() == EntryType.ROWDATA) {
                   log.info("开始处理binlog:{}文件的{}；event:{}, database:{}, table:{}",
                       entry.getHeader().getLogfileName(), entry.getHeader().getLogfileOffset(),

@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
-import java.util.Base64;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
@@ -70,10 +69,10 @@ public class ElasticsearchClient implements DisposableBean {
         new PreBuiltTransportClient(settings, SearchGuardPlugin.class).addTransportAddress(
             new TransportAddress(InetAddress.getByName(elasticsearchProperties.getHost()),
                 Integer.valueOf(elasticsearchProperties.getPort())));
-//    transportClient.threadPool().getThreadContext().putHeader("Authorization",
-//        "Basic " + Base64.getEncoder().encode(
-//            (elasticsearchProperties.getUsername() + ":" + elasticsearchProperties.getPassword())
-//                .getBytes()));
+    // transportClient.threadPool().getThreadContext().putHeader("Authorization",
+    // "Basic " + Base64.getEncoder().encode(ˇØ
+    // (elasticsearchProperties.getUsername() + ":" + elasticsearchProperties.getPassword())
+    // .getBytes()));
     log.info("elasticsearch transportClient 连接成功");
     return transportClient;
   }

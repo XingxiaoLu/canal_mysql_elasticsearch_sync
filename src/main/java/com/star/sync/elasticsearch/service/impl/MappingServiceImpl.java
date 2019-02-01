@@ -2,6 +2,7 @@ package com.star.sync.elasticsearch.service.impl;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
+import com.google.common.base.Splitter;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
@@ -33,6 +35,8 @@ public class MappingServiceImpl implements MappingService, InitializingBean {
   private BiMap<DatabaseTableModel, IndexTypeModel> dbEsBiMapping;
   private Map<String, String> tablePrimaryKeyMap;
   private Map<String, Converter> mysqlTypeElasticsearchTypeMapping;
+  private Map<String, String> defaultDbMapping;
+  private String tableFilter;
 
   @Override
   public Map<String, String> getTablePrimaryKeyMap() {
@@ -46,7 +50,19 @@ public class MappingServiceImpl implements MappingService, InitializingBean {
 
   @Override
   public IndexTypeModel getIndexType(DatabaseTableModel databaseTableModel) {
-    return dbEsBiMapping.get(databaseTableModel);
+    IndexTypeModel indexTypeModel = dbEsBiMapping.get(databaseTableModel);
+    if (indexTypeModel == null) {
+      List<String> filteredTables = Splitter.on(",").trimResults().splitToList(tableFilter);
+      if (filteredTables
+          .contains(databaseTableModel.getDatabase() + "." + databaseTableModel.getTable())) {
+        return indexTypeModel;
+      }
+      String indexPrefix = defaultDbMapping.get(databaseTableModel.getDatabase());
+      indexTypeModel = new IndexTypeModel(indexPrefix + "_" + databaseTableModel.getTable(),
+          databaseTableModel.getTable());
+      dbEsBiMapping.put(databaseTableModel, indexTypeModel);
+    }
+    return indexTypeModel;
   }
 
   @Override
@@ -100,6 +116,34 @@ public class MappingServiceImpl implements MappingService, InitializingBean {
 
   public void setDbEsMapping(Map<String, String> dbEsMapping) {
     this.dbEsMapping = dbEsMapping;
+  }
+
+  /**
+   * @return the defaultDbMapping
+   */
+  public Map<String, String> getDefaultDbMapping() {
+    return defaultDbMapping;
+  }
+
+  /**
+   * @param defaultDbMapping the defaultDbMapping to set
+   */
+  public void setDefaultDbMapping(Map<String, String> defaultDbMapping) {
+    this.defaultDbMapping = defaultDbMapping;
+  }
+
+  /**
+   * @return the tableFilter
+   */
+  public String getTableFilter() {
+    return tableFilter;
+  }
+
+  /**
+   * @param tableFilter the tableFilter to set
+   */
+  public void setTableFilter(String tableFilter) {
+    this.tableFilter = tableFilter;
   }
 
   private interface Converter {
